@@ -97,6 +97,7 @@ export class App extends Component {
 
   render() {
     const { items, isLoading, isLoadMoreBtnHidden } = this.state;
+    // console.log(items);
     return (
       <>
         <Searchbar onSubmit={this.handleFormSubmit} />
