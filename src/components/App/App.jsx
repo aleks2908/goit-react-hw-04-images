@@ -11,6 +11,7 @@ import { Loader } from 'components/Loader/Loader';
 import { Button } from '../Button/Button';
 import css from './App.module.css';
 
+
 export class App extends Component {
   state = {
     searchValue: '',
