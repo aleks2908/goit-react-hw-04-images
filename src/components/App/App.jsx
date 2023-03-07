@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { useState, useEffect } from 'react';
 import 'modern-normalize';
 import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
@@ -11,28 +11,28 @@ import { Loader } from 'components/Loader/Loader';
 import { Button } from '../Button/Button';
 import css from './App.module.css';
 
+export const App = () => {
+  const [searchValue, setSearchValue] = useState('');
+  const [page, setPage] = useState(1);
+  const [items, setItems] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadMoreBtnHidden, setIsLoadMoreBtnHidden] = useState(false);
 
-export class App extends Component {
-  state = {
-    searchValue: '',
-    page: 1,
-    items: [],
-    isLoading: false,
-    isLoadMoreBtnHidden: false,
-  };
+  useEffect(() => {
+    if (!searchValue) {
+      return;
+    }
 
-  async componentDidUpdate(_, prevState) {
-    if (
-      prevState.searchValue !== this.state.searchValue ||
-      prevState.page !== this.state.page
-    ) {
-      this.setState({ isLoading: true, isLoadMoreBtnHidden: false });
+    setIsLoading(true);
+    setIsLoadMoreBtnHidden(false);
 
+    const fetchData = async () => {
       const BASE_URL = 'https://pixabay.com/api/';
       const MY_KEY = '32804952-bc7fa4c68d10a619b16622bc9';
+
       try {
         const resp = await axios.get(
-          `${BASE_URL}?q=${this.state.searchValue}&page=${this.state.page}&key=${MY_KEY}&image_type=photo&orientation=horizontal&per_page=12`
+          `${BASE_URL}?q=${searchValue}&page=${page}&key=${MY_KEY}&image_type=photo&orientation=horizontal&per_page=12`
         );
 
         let totalHits = resp.data.totalHits;
@@ -51,22 +51,20 @@ export class App extends Component {
               theme: 'dark',
             }
           );
-          this.setState({ isLoading: false, items: [] });
+          setIsLoading(false);
+          setItems([]);
           return;
         } else {
-          if (this.state.page === 1) {
-            this.setState({ items: [...resp.data.hits] });
+          if (page === 1) {
+            setItems([...resp.data.hits]);
           } else {
-            this.setState(prevState => ({
-              items: [...prevState.items, ...resp.data.hits],
-            }));
+            setItems(prevState => [...prevState, ...resp.data.hits]);
           }
-
-          this.setState({ isLoading: false });
+          setIsLoading(false);
         }
 
-        if (this.state.page * 12 >= totalHits) {
-          this.setState({ isLoadMoreBtnHidden: true });
+        if (page * 12 >= totalHits) {
+          setIsLoadMoreBtnHidden(true);
           toast.success("You've reached the end of search results.", {
             position: 'top-right',
             autoClose: 5000,
@@ -81,57 +79,50 @@ export class App extends Component {
       } catch (error) {
         console.log(error);
       }
-    }
-  }
+    };
 
-  handleFormSubmit = searchValue => {
-    this.setState({ searchValue, page: 1 });
+    fetchData();
+  }, [searchValue, page]);
+
+  const handleFormSubmit = searchValue => {
+    setSearchValue(searchValue);
+    setPage(1);
   };
 
-  btnLoadMoreClick = () => {
-    this.setState({ isLoading: true });
-    this.setState(prevState => ({
-      page: prevState.page + 1,
-    }));
+  const btnLoadMoreClick = () => {
+    setIsLoading(true);
+    setPage(prevState => prevState + 1);
   };
 
-  render() {
-    const { items, isLoading, isLoadMoreBtnHidden } = this.state;
-    // console.log(items);
-    return (
-      <>
-        <Searchbar onSubmit={this.handleFormSubmit} />
-        {isLoading && (
-          <div className={css.vortexWrapper}>
-            <Loader />
-          </div>
-        )}
+  return (
+    <>
+      <Searchbar onSubmit={handleFormSubmit} />
+      {isLoading && (
+        <div className={css.vortexWrapper}>
+          <Loader />
+        </div>
+      )}
 
-        <ImageGallery items={items} />
+      <ImageGallery items={items} />
 
-        <ToastContainer
-          position="top-right"
-          autoClose={3000}
-          hideProgressBar={false}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="dark"
-        />
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+      />
 
-        {items.length !== 0 && (
-          <div hidden={isLoadMoreBtnHidden} className={css.vortexWrapper}>
-            {!isLoading ? (
-              <Button onClick={this.btnLoadMoreClick} />
-            ) : (
-              <Loader />
-            )}
-          </div>
-        )}
-      </>
-    );
-  }
-}
+      {items.length !== 0 && (
+        <div hidden={isLoadMoreBtnHidden} className={css.vortexWrapper}>
+          {!isLoading ? <Button onClick={btnLoadMoreClick} /> : <Loader />}
+        </div>
+      )}
+    </>
+  );
+};

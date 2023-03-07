@@ -15,7 +15,7 @@ export const Searchbar = ({ onSubmit }) => {
   const handleSubmit = event => {
     event.preventDefault();
     if (searchValue.trim() === '') {
-      toast.warn('Please enter something', {
+      toast.warn('Please enter a search term', {
         position: 'top-right',
         autoClose: 3000,
         hideProgressBar: false,
