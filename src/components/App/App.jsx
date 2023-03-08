@@ -26,7 +26,7 @@ export const App = () => {
     setIsLoading(true);
     setIsLoadMoreBtnHidden(false);
 
-    const fetchData = async () => {
+    async function fetchData() {
       const BASE_URL = 'https://pixabay.com/api/';
       const MY_KEY = '32804952-bc7fa4c68d10a619b16622bc9';
 
@@ -79,10 +79,10 @@ export const App = () => {
       } catch (error) {
         console.log(error);
       }
-    };
+    }
 
     fetchData();
-  }, [searchValue, page]);
+  }, [page, searchValue]);
 
   const handleFormSubmit = searchValue => {
     setSearchValue(searchValue);
